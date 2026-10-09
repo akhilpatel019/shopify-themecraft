@@ -124,12 +124,18 @@
         "influencer_name": "{{ product.metafields.custom.influencer_profile.value.name.value }}",
         "influencer_bio": "{{ product.metafields.custom.influencer_profile.value.description | metafield_tag }}"
       }
+    },
+    "products_faq_block_gcY6JK": {
+      "type": "products-faq-block",
+      "name": "Product FAQs",
+      "settings": {}
     }
   },
   "order": [
     "main",
     "disclosures",
     "related-products",
-    "influencer_profile_L4GY6D"
+    "influencer_profile_L4GY6D",
+    "products_faq_block_gcY6JK"
   ]
 }
