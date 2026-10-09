@@ -115,11 +115,21 @@
         "padding_top": 36,
         "padding_bottom": 28
       }
+    },
+    "influencer_profile_L4GY6D": {
+      "type": "influencer-profile",
+      "name": "Influencer Profile Card",
+      "settings": {
+        "influencer_image": "{{ product.metafields.custom.influencer_profile.value.image.value }}",
+        "influencer_name": "{{ product.metafields.custom.influencer_profile.value.name.value }}",
+        "influencer_bio": "{{ product.metafields.custom.influencer_profile.value.description | metafield_tag }}"
+      }
     }
   },
   "order": [
     "main",
     "disclosures",
-    "related-products"
+    "related-products",
+    "influencer_profile_L4GY6D"
   ]
 }
