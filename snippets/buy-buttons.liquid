@@ -60,6 +60,22 @@
           {%- render 'gift-card-recipient-form', product: product, form: form, section: section -%}
         {%- endif -%}
 
+        
+            {% if product.metafields.custom.enable_gift_wrap.value %}
+              <div class="gift-wrap-option">
+                <label for="gift-wrap-{{ section_id }}">
+                  <input
+                    type="checkbox"
+                    id="gift-wrap-{{ section_id }}"
+                    name="gift_wrap"
+                    value="yes"
+                  >
+                  Add gift wrap (+$10.00)
+                </label>
+              </div>
+            {% endif %}
+
+
         <div class="product-form__buttons">
           {%- liquid
             assign check_against_inventory = true
@@ -99,6 +115,8 @@
         </div>
       {%- endform -%}
     </product-form>
+
+
   {%- else -%}
     <div class="product-form">
       <div class="product-form__buttons form">

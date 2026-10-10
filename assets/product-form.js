@@ -31,7 +31,13 @@ if (!customElements.get('product-form')) {
         config.headers['X-Requested-With'] = 'XMLHttpRequest';
         delete config.headers['Content-Type'];
 
+        const giftWrapCheckbox = this.form.querySelector('input[name="gift_wrap"]');
+        const addGiftWrap = giftWrapCheckbox?.checked;
+        const variantId = this.form.querySelector('[name="id"]').value;
+        const quantity = parseInt(this.form.querySelector('[name="quantity"]')?.value) || 1;
+
         const formData = new FormData(this.form);
+
         if (this.cart) {
           formData.append(
             'sections',
@@ -40,10 +46,45 @@ if (!customElements.get('product-form')) {
           formData.append('sections_url', window.location.pathname);
           this.cart.setActiveElement(document.activeElement);
         }
-        config.body = formData;
 
-        const variantId = formData.get('id');
-        const quantity = parseInt(formData.get('quantity')) || 1;
+        if (addGiftWrap) {
+          config.headers['Content-Type'] = 'application/json';
+
+          const formProperties = {};
+          for (const [key, value] of formData.entries()) {
+            const match = key.match(/^properties\[(.*?)\]$/);
+            if (match && value) {
+              formProperties[match[1]] = value;
+            }
+          }
+
+          config.body = JSON.stringify({
+            items: [
+              {
+                id: 67693202899053,
+                quantity: quantity,
+                properties: {
+                  _gift_wrap_parent: String(variantId)
+                }
+              },
+              {
+                id: Number(variantId),
+                quantity: quantity,
+                properties: {
+                  ...formProperties,
+                  _gift_wrap_parent: String(variantId)
+                }
+              }
+            ],
+            sections: this.cart
+              ? this.cart.getSectionsToRender().map((section) => section.id)
+              : [],
+            sections_url: window.location.pathname
+          });
+        } else {
+          config.body = formData;
+        }
+
         const linesUpdateDeferred = this.createCartLinesUpdateEvent(variantId, quantity);
 
         fetch(`${routes.cart_add_url}`, config)

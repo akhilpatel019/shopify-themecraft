@@ -81,10 +81,34 @@
               </thead>
 
               <tbody>
+                {%- assign gift_wrap_variant_id = 67693202899053 -%}
                 {%- for item in cart.items -%}
+                  {%- assign is_gift_wrap = false -%}
+                  {%- if item.variant.id == gift_wrap_variant_id -%}
+                    {%- assign is_gift_wrap = true -%}
+                  {%- endif -%}
+
+                  {%- assign associated_gift_wrap_key = '' -%}
+                  {%- assign item_parent_id = item.properties['_gift_wrap_parent'] -%}
+                  {%- if item_parent_id != blank and is_gift_wrap == false -%}
+                    {%- for other in cart.items -%}
+                      {%- if other.variant.id == gift_wrap_variant_id and other.properties['_gift_wrap_parent'] == item_parent_id -%}
+                        {%- assign associated_gift_wrap_key = other.key -%}
+                        {%- break -%}
+                      {%- endif -%}
+                    {%- endfor -%}
+                  {%- endif -%}
+
                   <tr
-                    class="cart-item {% if item.parent_relationship.parent != null %}cart-item__nested-line{% endif %}"
+                    class="cart-item {% if item.parent_relationship.parent != null %}cart-item__nested-line{% endif %}{% if is_gift_wrap %} cart-item__nested-line cart-item__gift-wrap{% endif %}"
                     id="CartItem-{{ item.index | plus: 1 }}"
+                    data-line-key="{{ item.key }}"
+                    data-variant-id="{{ item.variant.id }}"
+                    data-is-gift-wrap="{{ is_gift_wrap }}"
+                    data-gift-wrap-parent="{{ item.properties['_gift_wrap_parent'] }}"
+                    {% if associated_gift_wrap_key != blank %}
+                      data-associated-gift-wrap-key="{{ associated_gift_wrap_key }}"
+                    {% endif %}
                     {% if item.parent_relationship.parent != null %}
                       aria-label="{{- 'products.product.nested_label' | t: title: item.product.title, parent_title: item.parent_relationship.parent.title | escape -}}"
                     {% endif %}
@@ -251,7 +275,7 @@
                                 class="quantity__button"
                                 name="minus"
                                 type="button"
-                                {% if can_update_quantity == false %}
+                                {% if is_gift_wrap or can_update_quantity == false %}
                                   disabled
                                 {% endif %}
                               >
@@ -281,7 +305,8 @@
                                 aria-label="{{ 'products.product.quantity.input_label' | t: product: item.product.title | escape }}"
                                 id="Quantity-{{ item.index | plus: 1 }}"
                                 data-index="{{ item.index | plus: 1 }}"
-                                {% if can_update_quantity == false %}
+                                {% if is_gift_wrap or can_update_quantity == false %}
+                                  readonly
                                   disabled
                                 {% endif %}
                               >
@@ -289,7 +314,7 @@
                                 class="quantity__button"
                                 name="plus"
                                 type="button"
-                                {% if can_update_quantity == false %}
+                                {% if is_gift_wrap or can_update_quantity == false %}
                                   disabled
                                 {% endif %}
                               >

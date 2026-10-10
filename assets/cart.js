@@ -181,14 +181,36 @@ class CartItems extends window.StandardEvents.createViewEventElement(HTMLElement
     // Cache sections before the fetch so we read dataset.id while elements still exist in the DOM
     const sectionsToRender = this.getSectionsToRender();
 
-    const body = JSON.stringify({
-      line,
-      quantity,
-      sections: sectionsToRender.map((section) => section.section),
-      sections_url: window.location.pathname,
-    });
+    const row = this.querySelector(`#CartItem-${line}`) || this.querySelector(`#CartDrawer-Item-${line}`);
+    const associatedGiftWrapKey = row?.dataset.associatedGiftWrapKey;
 
-    fetch(`${routes.cart_change_url}`, { ...fetchConfig(), ...{ body } })
+    let associatedIndex = null;
+    if (associatedGiftWrapKey) {
+      const associatedRow = this.querySelector(`[data-line-key="${associatedGiftWrapKey}"]`);
+      if (associatedRow && associatedRow.id) {
+        associatedIndex = associatedRow.id.replace('CartItem-', '').replace('CartDrawer-Item-', '');
+        if (associatedIndex) this.enableLoading(associatedIndex);
+      }
+    }
+
+    const endpoint = associatedGiftWrapKey && lineKey ? routes.cart_update_url : routes.cart_change_url;
+    const body = associatedGiftWrapKey && lineKey
+      ? JSON.stringify({
+          updates: {
+            [lineKey]: quantity,
+            [associatedGiftWrapKey]: quantity,
+          },
+          sections: sectionsToRender.map((section) => section.section),
+          sections_url: window.location.pathname,
+        })
+      : JSON.stringify({
+          line,
+          quantity,
+          sections: sectionsToRender.map((section) => section.section),
+          sections_url: window.location.pathname,
+        });
+
+    fetch(`${endpoint}`, { ...fetchConfig(), ...{ body } })
       .then((response) => {
         return response.text();
       })
@@ -208,7 +230,7 @@ class CartItems extends window.StandardEvents.createViewEventElement(HTMLElement
           const items = document.querySelectorAll('.cart-item');
 
           if (parsedState.errors) {
-            quantityElement.value = quantityElement.getAttribute('value');
+            if (quantityElement) quantityElement.value = quantityElement.getAttribute('value');
             this.updateLiveRegions(line, parsedState.errors);
             return;
           }
@@ -231,7 +253,7 @@ class CartItems extends window.StandardEvents.createViewEventElement(HTMLElement
           });
           const updatedValue = parsedState.items[line - 1] ? parsedState.items[line - 1].quantity : undefined;
           let message = '';
-          if (items.length === parsedState.items.length && updatedValue !== parseInt(quantityElement.value)) {
+          if (quantityElement && items.length === parsedState.items.length && updatedValue !== parseInt(quantityElement.value)) {
             if (typeof updatedValue === 'undefined') {
               message = window.cartStrings.error;
             } else {
@@ -264,6 +286,7 @@ class CartItems extends window.StandardEvents.createViewEventElement(HTMLElement
       })
       .finally(() => {
         this.disableLoading(line);
+        if (associatedIndex) this.disableLoading(associatedIndex);
         CartPerformance.measureFromMarker(`${eventTarget}:user-action`, cartPerformanceUpdateMarker);
       });
   }

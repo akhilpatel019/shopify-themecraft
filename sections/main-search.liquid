@@ -260,8 +260,8 @@
                 {%- for item in search.results -%}
 
                       {% if item.object_type == 'product' and item.tags contains 'exclude-from-search' %}
-                      {% continue %}
-                    {% endif %} 
+                        {% continue %}
+                      {% endif %}
 
                   {% assign lazy_load = false %}
                   {%- if forloop.index > 2 -%}
