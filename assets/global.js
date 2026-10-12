@@ -1438,3 +1438,42 @@ class CartPerformance {
     );
   }
 }
+
+if (!customElements.get('card-variant-swatches')) {
+  customElements.define(
+    'card-variant-swatches',
+    class CardVariantSwatches extends HTMLElement {
+      constructor() {
+        super();
+        this.onSwatchClick = this.onSwatchClick.bind(this);
+      }
+
+      connectedCallback() {
+        this.removeEventListener('click', this.onSwatchClick);
+        this.addEventListener('click', this.onSwatchClick);
+      }
+
+      disconnectedCallback() {
+        this.removeEventListener('click', this.onSwatchClick);
+      }
+
+      onSwatchClick(event) {
+        const swatch = event.target.closest('.swatch-img-cars');
+        if (!swatch) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        const card = this.closest('.card-wrapper');
+        if (!card) return;
+
+        const mainImg = card.querySelector('.card__media .media img');
+        if (!mainImg) return;
+
+        const newSrc = swatch.dataset.targetSrc || swatch.src.replace('width=100', 'width=533');
+        mainImg.setAttribute('src', newSrc);
+        mainImg.removeAttribute('srcset');
+      }
+    }
+  );
+}

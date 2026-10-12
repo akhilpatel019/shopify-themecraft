@@ -145,6 +145,20 @@
             </div>
           </div>
         </div>
+    
+      <card-variant-swatches class="card_var_img_wrapper">
+        {% for variant in card_product.variants %}
+          {% if variant.featured_media != blank %} 
+            <img
+              class="swatch-img-cars"
+              src="{{ variant.featured_media | image_url: width: 100 }}"
+              alt="{{ variant.title | escape }}"
+              data-target-src="{{ variant.featured_media | image_url: width: 533 }}"
+            >
+          {% endif %}
+        {% endfor %}
+      </card-variant-swatches>
+        
         <div class="card__content">
           <div class="card__information">
             <h3
